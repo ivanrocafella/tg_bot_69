@@ -11,7 +11,9 @@ namespace tg_bot_69
 {
     class Bot
     {
+        //bot_tg_69
         private readonly TelegramBotClient _bot;
+        private string ChoiceBot;
 
         public Bot(string token)
         {
@@ -37,15 +39,37 @@ namespace tg_bot_69
             try
             {
                 Message message = messageEventArgs.Message;
-                var markup = new InlineKeyboardMarkup(new[]
-{
-                  new InlineKeyboardButton(){Text = "Время", CallbackData = DateTime.Now.ToShortTimeString()},
-                  new InlineKeyboardButton(){Text = "Приветствие", CallbackData = "Здравствуйте"},
-                  new InlineKeyboardButton(){Text = "Hello", CallbackData = "Hello"}
-                });
-                await _bot.SendTextMessageAsync(message.Chat.Id, message.Text, replyMarkup: markup);
                 Console.WriteLine(message.Text);
-                await _bot.SendTextMessageAsync(message.Chat.Id, message.Text);
+                string AnswerOfBot = null;
+                if (message.Text == "/start")
+                {
+                    AnswerOfBot = "Вас приветствует игровой бот!\n" +
+                        "Со мной вы можете сыграть в игру \"Камень-ножницы-бумага\"\n" +
+                        "Правила игры следующие:\n" +
+                        "Бумага побеждает камень. Камень побеждает ножницы. Ножницы побеждают бумагу";
+                }
+                else if (message.Text == "/help")
+                {
+                    AnswerOfBot = "Правила игры следующие:\n" +
+                                 "Бумага побеждает камень («бумага обёртывает камень»).\n" +
+                                 "Камень побеждает ножницы («камень затупляет или ломает ножницы»).\n" +
+                                 "Ножницы побеждают бумагу («ножницы разрезают бумагу»).";
+                }
+                else if (message.Text == "/game")
+                {
+                    string[] RPS = { "Камень", "Ножницы", "Бумага" };
+                    Random random = new Random();
+                    ChoiceBot = RPS[random.Next(0, 3)];
+                    var markup = new InlineKeyboardMarkup(new[]
+                    {
+                        new InlineKeyboardButton(){Text = "Камень", CallbackData = RockPaperScissors(ChoiceBot, "Камень")},
+                        new InlineKeyboardButton(){Text = "Ножницы", CallbackData = RockPaperScissors(ChoiceBot, "Ножницы")},
+                        new InlineKeyboardButton(){Text = "Бумага", CallbackData = RockPaperScissors(ChoiceBot, "Бумага")},
+                    }); 
+                    await _bot.SendTextMessageAsync(message.Chat.Id, "Выберите вариант", replyMarkup: markup);
+                }
+                await _bot.SendTextMessageAsync(message.Chat.Id, AnswerOfBot);
+                
 
 
             }
@@ -55,15 +79,28 @@ namespace tg_bot_69
             }
         }
 
+        public static string RockPaperScissors(string first, string second) =>
+            (first, second) switch
+            {
+                ("Камень", "Бумага") => "бумага обернула камень. Вы победили",
+                ("Камень", "Ножницы") => "камень сломал ножницы. Бот победил",
+                ("Бумага", "Камень") => "бумага обернула камень. Бот победил",
+                ("Бумага", "Ножницы") => "ножницы разрезали бумагу. Вы победили",
+                ("Ножницы", "Камень") => "ножницы сломаны от камня. Вы победили",
+                ("Ножницы", "Бумага") => "ножницы разрезали бумагу. Бот победил",
+                (_, _) => "Ничья",
+            };
+
         [Obsolete]
         private async void HandleCallbackQuery(object sender, CallbackQueryEventArgs callbackQueryEventArgs)
         {
-            await _bot.AnswerCallbackQueryAsync(callbackQueryEventArgs.CallbackQuery.Id,
+            await _bot.SendTextMessageAsync(callbackQueryEventArgs.CallbackQuery.Message.Chat.Id,
                 callbackQueryEventArgs.CallbackQuery.Data);
             await _bot.EditMessageReplyMarkupAsync(callbackQueryEventArgs.CallbackQuery.Message.Chat.Id,
                 callbackQueryEventArgs.CallbackQuery.Message.MessageId, null);
-
         }
+
+
 
 
     }
