@@ -6,7 +6,8 @@ namespace tg_bot_69
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            Bot bot = new Bot("1970053166:AAGk3zio7Pl1uAGWCbeLt73PVMcinf0x5M4");
+            bot.StartBot();
         }
     }
 }
